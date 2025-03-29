@@ -1,0 +1,123 @@
+databaseUrl: ${DATASOURCE_URL:postgresql://localhost:5432/digital-menu}
+
+server:
+  port: 10000
+  compression:
+    enabled: true
+    min-response-size: 1KB
+    mime-types: text/html,text/xml,text/plain,text/css,application/javascript,application/json
+spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  main:
+    allow-bean-definition-overriding: true
+    web-application-type: REACTIVE
+  application:
+    name: Hang-Digital-Menu
+  docker:
+    compose:
+      enabled: true
+  threads:
+    virtual:
+      enabled: true
+  mvc:
+    problemdetails:
+      enabled: true
+  cache:
+    type: redis
+    redis:
+      time-to-live: 300000
+  datasource:
+    hikari:
+      jdbc-url: jdbc:${databaseUrl}
+      driver-class-name: ${DRIVER_CLASS_NAME:org.postgresql.Driver}
+      username: ${DATASOURCE_USERNAME:postgres}
+      password: ${DATASOURCE_PASSWORD:postgres}
+      pool-name: SpringBootHikariCP # HikariCP
+      maximum-pool-size: 10
+      minimum-idle: 2
+      initialization-fail-timeout: 0
+      connection-timeout: 30000
+      schema: public
+  r2dbc:
+    url: r2dbc:${databaseUrl}
+    username: ${DATASOURCE_USERNAME:postgres}
+    password: ${DATASOURCE_PASSWORD:postgres}
+    pool:
+      enabled: true # Requires r2dbc-pool
+      initial-size: 5
+      min-idle: 5
+      max-size: 20
+      max-idle-time: 10m
+      max-life-time: 45m
+      validation-query: SELECT 1
+
+  flyway:
+    enabled: false
+    locations: classpath:db/migration/structure, classpath:db/migration/data
+    validate-on-migrate: true
+    default-schema: public
+    url: ${spring.datasource.url}
+    user: ${spring.datasource.username}
+    password: ${spring.datasource.password}
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:rabbitmq}
+    password: ${RABBITMQ_PASSWORD:rabbitmq}
+
+rsa:
+  private-key:
+    classpath:certs/private.pem
+  public-key:
+    classpath:certs/public.pem
+
+token:
+  domain: ${TOKEN_DOMAIN:HangMenuAPI}
+  accessTokenExpiresHours: 336
+  refreshTokenExpiresHours: 720
+  issuer: jwt_issuer
+  secret: ${TOKEN_SECRET:WjJWdVpYSmhkR1ZmYkc5dVoxOXpaV055WlhSZmEyVjU=}
+
+cors:
+  allowedOrigins:
+    - http://localhost:3333
+    - http://localhost:4444
+    - http://localhost:5555
+    - http://localhost:4173
+    - http://localhost:4200
+    - http://localhost:10000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when_authorized
+  info:
+    git:
+      mode: full
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+logging:
+  level:
+    org.jooq.Constants: OFF
+  pattern:
+    correlation: '[${spring.application.name:},%X{traceId:-},%X{spanId:-}]'
+    console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %5p ${PID:- } --- [%applicationName] [%15.15t] %-40.40logger{39} : [traceId=%X{traceId}] - %m%n${LOG_EXCEPTION_CONVERSION_WORD:%wEx}"
+
+log:
+  loki:
+    url: ${LOKI_URL:http://localhost:3100/loki/api/v1/push}
+  logstash:
+    url: ${LOGSTASH_URL:localhost:5044}
