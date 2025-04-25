@@ -1,7 +1,6 @@
 package com.keakimleang.digital_menu.features.users.services;
 
 import com.keakimleang.digital_menu.features.users.payloads.*;
-import com.keakimleang.digital_menu.features.users.repos.*;
 import com.keakimleang.digital_menu.utils.*;
 import lombok.*;
 import lombok.extern.slf4j.*;
@@ -14,14 +13,14 @@ import reactor.core.publisher.*;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class AuthServiceImpl {
-    private final UserRepository userRepository;
+public class AuthService {
+    private final UserService userService;
     private final TokenProviderUtils tokenProvider;
     private final ReactiveAuthenticationManager am;
 
     @Transactional
     public Mono<AuthResponse> loginUser(LoginRequest request) {
-        return userRepository.findByUsername(request.getUsername())
+        return userService.findByUsername(request.getUsername())
                 .flatMap(user -> am.authenticate(
                                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
                         )

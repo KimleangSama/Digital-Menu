@@ -1,7 +1,7 @@
 package com.keakimleang.digital_menu.configs.securities;
 
 
-import com.keakimleang.digital_menu.configs.filter.*;
+import com.keakimleang.digital_menu.configs.filters.*;
 import com.keakimleang.digital_menu.constants.*;
 import lombok.*;
 import lombok.extern.slf4j.*;
@@ -17,6 +17,7 @@ import org.springframework.security.web.server.context.*;
 @Configuration
 @EnableWebFluxSecurity
 @EnableMethodSecurity(jsr250Enabled = true)
+@EnableReactiveMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final ReactiveAuthenticationManager am;

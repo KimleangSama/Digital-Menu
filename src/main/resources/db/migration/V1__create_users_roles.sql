@@ -14,12 +14,10 @@ CREATE TABLE users
     address            VARCHAR(255),
     emergency_contact  VARCHAR(255),
     emergency_relation VARCHAR(255),
-    profile_url        VARCHAR(255),
+    profile            VARCHAR(255),
     last_login_at      TIMESTAMP WITHOUT TIME ZONE,
     provider           VARCHAR(255) NOT NULL,
     status             VARCHAR(255) NOT NULL,
-    deleted_at         TIMESTAMP WITHOUT TIME ZONE,
-    deleted_by         int4,
     CONSTRAINT pk_users PRIMARY KEY (id)
 );
 
@@ -56,14 +54,13 @@ ALTER TABLE users_roles
     ADD CONSTRAINT fk_userol_on_user FOREIGN KEY (user_id) REFERENCES users (id);
 
 INSERT INTO users (id, created_by, updated_by, created_at, updated_at, username, password, raw, fullname, email, phone,
-                   address, emergency_contact, emergency_relation, profile_url, last_login_at, provider, status,
-                   deleted_at, deleted_by)
+                   address, emergency_contact, emergency_relation, profile, last_login_at, provider, status)
 
 VALUES ('999999', null, null, '2025-03-21 21:36:52.603573',
         '2025-03-21 21:36:52.603595', 'superadmin', '$2a$10$Oet966h8Aimau6Eu0p5gYufsj4gTVFlz7aE9J85YhWyzTouY6T8ym',
         'superadmin@_@', 'superadmin', 'superadmin', null, null,
         null, null, null, null, 'local',
-        'pending', null, null);
+        'pending');
 
 INSERT INTO roles (id, name)
 VALUES (1, 'admin');

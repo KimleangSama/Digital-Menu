@@ -35,7 +35,7 @@ public class CustomUserDetails implements UserDetails, Serializable {
 
     @Override
     public String getPassword() {
-        return user.getPassword();
+        return user.getEncryptedPassword();
     }
 
     @Override

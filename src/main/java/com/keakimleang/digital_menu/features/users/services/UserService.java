@@ -1,36 +1,38 @@
 package com.keakimleang.digital_menu.features.users.services;
 
-import com.keakimleang.digital_menu.constants.*;
+import com.keakimleang.digital_menu.constants.CacheValue;
 import com.keakimleang.digital_menu.features.users.entities.User;
-import com.keakimleang.digital_menu.features.users.entities.*;
-import com.keakimleang.digital_menu.features.users.payloads.*;
-import com.keakimleang.digital_menu.features.users.payloads.mappers.*;
-import com.keakimleang.digital_menu.features.users.repos.*;
-import lombok.*;
-import lombok.extern.slf4j.*;
-import org.springframework.cache.annotation.*;
-import org.springframework.security.core.userdetails.*;
-import org.springframework.stereotype.*;
-import org.springframework.transaction.annotation.*;
-import reactor.core.publisher.*;
+import com.keakimleang.digital_menu.features.users.entities.UserRole;
+import com.keakimleang.digital_menu.features.users.payloads.UserRequest;
+import com.keakimleang.digital_menu.features.users.payloads.UserResponse;
+import com.keakimleang.digital_menu.features.users.payloads.mappers.UserMapper;
+import com.keakimleang.digital_menu.features.users.repos.UserRepository;
+import com.keakimleang.digital_menu.features.users.repos.UserRoleRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class UserServiceImpl {
+public class UserService {
     private final UserMapper userMapper;
     private final UserRepository userRepository;
     private final UserRoleRepository userRoleRepository;
-    private final UserRoleServiceImpl userRoleService;
+    private final UserRoleService userRoleService;
     private final RoleServiceImpl roleService;
 
     @Transactional
     public Mono<UserResponse> registerUser(UserRequest request) {
         User user = new User();
         user.setUsername(request.getUsername());
-        user.setPassword(request.getPassword());
+        user.setEncryptedPassword(request.getPassword());
         user.setFullname(request.getFullname());
-        user.setRaw(request.getPassword());
+        user.setRawPassword(request.getPassword());
         user.setEmail(request.getFullname());
         user.setProvider("local");
         user.setStatus("pending");
@@ -53,15 +55,7 @@ public class UserServiceImpl {
                                     response.setRoles(roles);
                                     return response;
                                 })
-                )
-                .onErrorMap(e -> {
-                    // You can further refine which exceptions to catch and map to your custom exception
-                    if (e instanceof IllegalArgumentException) {
-                        return new RuntimeException("User registration failed: " + e.getMessage());
-                    } else {
-                        return new RuntimeException("User registration failed due to an unexpected error: " + e.getMessage());
-                    }
-                });
+                );
     }
 
     @Transactional
@@ -77,9 +71,9 @@ public class UserServiceImpl {
                 );
     }
 
-    @Cacheable(value = CacheValue.USER, key = "#username")
+    @Transactional
+    @Cacheable(value = CacheValue.USER_ENTITY, key = "#username")
     public Mono<User> findByUsername(String username) {
-        return userRepository.findByUsername(username)
-                .switchIfEmpty(Mono.error(new UsernameNotFoundException("User not found")));
+        return userRepository.findByUsername(username);
     }
 }

@@ -1,12 +1,11 @@
 package com.keakimleang.digital_menu.features.users.repos;
 
-import com.keakimleang.digital_menu.features.users.entities.*;
-import org.springframework.data.repository.reactive.*;
-import org.springframework.stereotype.*;
-import reactor.core.publisher.*;
+import com.keakimleang.digital_menu.features.users.entities.User;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Mono;
 
 @Repository
 public interface UserRepository extends ReactiveCrudRepository<User, Long> {
-
     Mono<User> findByUsername(String username);
 }

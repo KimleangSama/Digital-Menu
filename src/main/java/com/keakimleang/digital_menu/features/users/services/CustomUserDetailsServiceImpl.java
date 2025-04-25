@@ -12,8 +12,8 @@ import reactor.core.publisher.*;
 @RequiredArgsConstructor
 @Service
 public class CustomUserDetailsServiceImpl implements ReactiveUserDetailsService {
-    private final UserServiceImpl userService;
-    private final UserRoleServiceImpl userRoleService;
+    private final UserService userService;
+    private final UserRoleService userRoleService;
 
     @Cacheable(value = CacheValue.USER_DETAIL, key = "#username")
     @Override

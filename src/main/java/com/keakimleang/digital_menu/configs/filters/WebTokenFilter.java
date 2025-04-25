@@ -1,21 +1,28 @@
-package com.keakimleang.digital_menu.configs.filter;
+package com.keakimleang.digital_menu.configs.filters;
 
-import com.keakimleang.digital_menu.features.users.entities.*;
-import com.keakimleang.digital_menu.features.users.payloads.*;
-import com.keakimleang.digital_menu.features.users.services.*;
-import com.keakimleang.digital_menu.utils.*;
-import java.util.*;
-import lombok.extern.slf4j.*;
-import org.springframework.beans.factory.annotation.*;
-import org.springframework.http.*;
-import org.springframework.lang.*;
-import org.springframework.security.authentication.*;
-import org.springframework.security.core.context.*;
-import org.springframework.stereotype.*;
-import org.springframework.util.*;
-import org.springframework.web.server.*;
-import reactor.core.publisher.*;
-import reactor.core.scheduler.*;
+import com.keakimleang.digital_menu.features.users.entities.Role;
+import com.keakimleang.digital_menu.features.users.entities.User;
+import com.keakimleang.digital_menu.features.users.payloads.CustomUserDetails;
+import com.keakimleang.digital_menu.features.users.services.UserRoleService;
+import com.keakimleang.digital_menu.features.users.services.UserService;
+import com.keakimleang.digital_menu.utils.TokenProviderUtils;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.lang.NonNull;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.server.WebFilter;
+import org.springframework.web.server.WebFilterChain;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
+
+import java.util.List;
 
 @Slf4j
 @Component
@@ -23,10 +30,11 @@ public class WebTokenFilter implements WebFilter {
     @Autowired
     private TokenProviderUtils tokenProvider;
     @Autowired
-    private UserServiceImpl userService;
+    private UserService userService;
     @Autowired
-    private UserRoleServiceImpl userRoleServiceImpl;
+    private UserRoleService userRoleService;
 
+    @NonNull
     @Override
     public Mono<Void> filter(@NonNull final ServerWebExchange exchange,
                              @NonNull final WebFilterChain chain) {
@@ -40,7 +48,7 @@ public class WebTokenFilter implements WebFilter {
                 String username = tokenProvider.getUsernameFromToken(jwt);
                 return userService.findByUsername(username)
                         .subscribeOn(Schedulers.boundedElastic())
-                        .flatMap(user -> userRoleServiceImpl.findRolesByUserId(user.getId())
+                        .flatMap(user -> userRoleService.findRolesByUserId(user.getId())
                                 .collectList()
                                 .flatMap(roles -> {
                                     UsernamePasswordAuthenticationToken authentication =
