@@ -1,14 +1,10 @@
 package com.keakimleang.digital_menu.commons.payloads;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.experimental.Accessors;
-
-import java.io.Serializable;
-import java.time.Instant;
+import com.fasterxml.jackson.annotation.*;
+import java.io.*;
+import java.time.*;
+import lombok.*;
+import lombok.experimental.*;
 
 @Getter
 @Setter
@@ -110,6 +106,13 @@ public class BaseResponse<T> implements Serializable {
         return response;
     }
 
+    public static <T> BaseResponse<T> dataIntegrityViolation() {
+        BaseResponse<T> response = new BaseResponse<>();
+        response.setStatus(Status.DATA_INTEGRITY_VIOLATION);
+        response.setStatusCode(409);
+        return response;
+    }
+
     public static <T> BaseResponse<T> tooManyRequests() {
         BaseResponse<T> response = new BaseResponse<>();
         response.setStatus(Status.TOO_MANY_REQUESTS);
@@ -127,6 +130,6 @@ public class BaseResponse<T> implements Serializable {
     public enum Status {
         GENERATION_NOT_AVAILABLE, NOT_ACCEPTABLE, OK, BAD_REQUEST, UNAUTHORIZED, VALIDATION_EXCEPTION, EXCEPTION,
         WRONG_CREDENTIALS, ACCESS_DENIED, NOT_FOUND, CREATED, DUPLICATE_ENTITY, TOO_MANY_REQUESTS,
-        EXPECTED_FAILED
+        EXPECTED_FAILED, DATA_INTEGRITY_VIOLATION
     }
 }

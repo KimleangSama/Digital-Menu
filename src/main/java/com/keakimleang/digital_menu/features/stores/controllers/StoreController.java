@@ -8,6 +8,7 @@ import com.keakimleang.digital_menu.features.stores.payloads.request.updates.*;
 import com.keakimleang.digital_menu.features.stores.payloads.response.*;
 import com.keakimleang.digital_menu.features.stores.services.*;
 import com.keakimleang.digital_menu.features.users.payloads.*;
+import java.util.*;
 import lombok.*;
 import lombok.extern.slf4j.*;
 import org.springframework.security.access.prepost.*;
@@ -28,11 +29,7 @@ public class StoreController {
             @RequestBody CreateStoreRequest request
     ) {
         return storeService.createStore(user.getUser(), request)
-                .map(storeResponse -> BaseResponse.<StoreResponse>ok().setPayload(storeResponse))
-                .onErrorResume(e -> Mono.just(
-                        BaseResponse.<StoreResponse>exception()
-                                .setError("Error creating store: " + e.getMessage())
-                ));
+                .map(storeResponse -> BaseResponse.<StoreResponse>ok().setPayload(storeResponse));
     }
 
     @PutMapping("/{id}/update")
@@ -43,10 +40,24 @@ public class StoreController {
             @RequestBody UpdateStoreRequest request
     ) {
         return storeService.updateStore(user.getUser(), id, request)
-                .map(storeResponse -> BaseResponse.<StoreResponse>ok().setPayload(storeResponse))
-                .onErrorResume(e -> Mono.just(
-                        BaseResponse.<StoreResponse>exception()
-                                .setError("Error updating store: " + e.getMessage())
-                ));
+                .map(store -> BaseResponse.<StoreResponse>ok().setPayload(store));
+    }
+
+    @GetMapping("/{slug}/get")
+    public Mono<BaseResponse<StoreResponse>> findStoreBySlug(
+            @PathVariable String slug
+    ) {
+        return storeService.findStoreBySlug(slug)
+                .map(res -> BaseResponse.<StoreResponse>ok().setPayload(res));
+    }
+
+    @PatchMapping("/assign-to-group")
+    @PreAuthorize("hasRole('admin')")
+    public Mono<BaseResponse<List<StoreResponse>>> assignStoreToGroup(
+            @RequestBody AssignGroupRequest request
+    ) {
+        return storeService.assignStoreToGroup(request)
+                .collectList()
+                .map(res -> BaseResponse.<List<StoreResponse>>ok().setPayload(res));
     }
 }

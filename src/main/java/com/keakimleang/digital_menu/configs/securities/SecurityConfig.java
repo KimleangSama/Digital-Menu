@@ -21,6 +21,7 @@ import org.springframework.security.web.server.context.*;
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final ReactiveAuthenticationManager am;
+    private final ServerAuthenticationEntryPointException entryPointException;
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(final ServerHttpSecurity http,
@@ -30,6 +31,9 @@ public class SecurityConfig {
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
+                .exceptionHandling(e -> {
+                    e.authenticationEntryPoint(entryPointException);
+                })
                 .authorizeExchange(auth -> auth
                         .pathMatchers(SecurityConstant.ANONYMOUS_PATH).permitAll()
                         .anyExchange().authenticated()

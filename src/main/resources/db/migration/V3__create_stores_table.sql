@@ -109,9 +109,6 @@ ALTER TABLE operating_hours
     ADD CONSTRAINT FK_OPERATING_HOURS_ON_STORE FOREIGN KEY (store_id) REFERENCES stores (id);
 
 ALTER TABLE stores
-    ADD CONSTRAINT uc_stores_group UNIQUE (group_id);
-
-ALTER TABLE stores
     ADD CONSTRAINT uc_stores_name UNIQUE (name);
 
 ALTER TABLE stores

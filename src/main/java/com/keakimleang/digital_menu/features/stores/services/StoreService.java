@@ -29,6 +29,7 @@ public class StoreService {
     private final PaymentMethodRepository paymentMethodRepository;
     private final FeeRangeRepository feeRangeRepository;
     private final GroupMemberRepository groupMemberRepository;
+    private final GroupRepository groupRepository;
 
     @Caching(evict = {
             @CacheEvict(value = CacheValue.STORES, key = "#user.id"),
@@ -144,40 +145,34 @@ public class StoreService {
     @Transactional
     public Mono<StoreResponse> updateStore(User user, Long storeId, UpdateStoreRequest request) {
         return storeRepository.findById(storeId)
-                .switchIfEmpty(Mono.error(new ResourceNotFoundException("Store", "" + storeId)))
-                .flatMap(existingStore -> groupMemberRepository.existsByUserIdAndGroupId(user.getId(), existingStore.getGroupId())
-                        .flatMap(exists -> {
-                            if (exists) {
-                                // Update basic store properties
-                                updateStoreFromRequest(existingStore, request);
-                                return storeRepository.save(existingStore)
-                                        .flatMap(savedStore -> {
-                                            // Collect all operations that create related entities
-                                            Mono<List<OrderingOption>> orderingOptionsMono = recreateOrderingOptions(savedStore, request);
-                                            Mono<List<OperatingHour>> operatingHoursMono = recreateOperatingHours(savedStore, request);
-                                            Mono<List<PaymentMethod>> paymentMethodsMono = recreatePaymentMethods(savedStore, request);
+                .switchIfEmpty(Mono.error(new ResponseException(404, "error.store.not-found", String.valueOf(storeId))))
+                .flatMap(existingStore ->
+                        groupMemberRepository.existsByUserIdAndGroupId(user.getId(), existingStore.getGroupId())
+                                .flatMap(hasAccess -> {
+                                    if (!hasAccess) {
+                                        return Mono.error(new ResponseException(403, "error.store.forbidden", user.getUsername(), storeId));
+                                    }
 
-                                            // Wait for all operations to complete and collect their results
-                                            return Mono.zip(
-                                                    orderingOptionsMono,
-                                                    operatingHoursMono,
-                                                    paymentMethodsMono
-                                            ).map(tuple -> {
-                                                // Set related entities on the store for response
-                                                savedStore.setOrderingOptions(tuple.getT1());
-                                                savedStore.setOperatingHours(tuple.getT2());
-                                                savedStore.setPaymentMethods(tuple.getT3());
-                                                return savedStore;
-                                            });
-                                        })
-                                        .map(StoreResponse::fromEntity)
-                                        .doOnSuccess(updatedStore -> log.info("Store {} updated successfully", updatedStore.getId()))
-                                        .doOnError(e -> log.error("Error while updating store {} for user {}", storeId, user.getId(), e));
-                            } else {
-                                // Add this else clause to handle the case where permission check fails
-                                return Mono.error(new ResourceForbiddenException(user.getUsername(), "store with ID: " + storeId));
-                            }
-                        }));
+                                    updateStoreFromRequest(existingStore, request);
+
+                                    Mono<List<OrderingOption>> orderingOptions = recreateOrderingOptions(existingStore, request);
+                                    Mono<List<OperatingHour>> operatingHours = recreateOperatingHours(existingStore, request);
+                                    Mono<List<PaymentMethod>> paymentMethods = recreatePaymentMethods(existingStore, request);
+
+                                    return storeRepository.save(existingStore)
+                                            .flatMap(savedStore -> Mono.zip(orderingOptions, operatingHours, paymentMethods)
+                                                    .map(tuple -> {
+                                                        savedStore.setOrderingOptions(tuple.getT1());
+                                                        savedStore.setOperatingHours(tuple.getT2());
+                                                        savedStore.setPaymentMethods(tuple.getT3());
+                                                        return savedStore;
+                                                    })
+                                            );
+                                })
+                )
+                .map(StoreResponse::fromEntity)
+                .doOnSuccess(response -> log.info("Store {} updated successfully", response.getId()))
+                .doOnError(e -> log.error("Failed to update store {} for user {}", storeId, user.getId(), e));
     }
 
     private Mono<List<OrderingOption>> recreateOrderingOptions(Store store, UpdateStoreRequest request) {
@@ -284,4 +279,25 @@ public class StoreService {
         store.setUpdatedAt(LocalDateTime.now());
     }
 
+    @Transactional
+    @Cacheable(value = CacheValue.STORES, key = "#slug", condition = "#slug != null")
+    public Mono<StoreResponse> findStoreBySlug(String slug) {
+        return storeRepository.findBySlug(slug)
+                .switchIfEmpty(Mono.error(new ResponseException(404, "error.store.not-found", slug)));
+    }
+
+    @Caching(evict = {
+            @CacheEvict(value = CacheValue.STORES, key = "#request.storeIds"),
+    })
+    public Flux<StoreResponse> assignStoreToGroup(AssignGroupRequest request) {
+        return groupRepository.findById(request.getGroupId())
+                .switchIfEmpty(Mono.error(new ResponseException(404, "error.group.not-found", request.getGroupId())))
+                .flatMapMany(group -> storeRepository.findAllById(request.getStoreIds())
+                        .switchIfEmpty(Mono.error(new ResponseException(404, "error.store.not-found", request.getStoreIds())))
+                        .flatMap(store -> {
+                            store.setGroupId(request.getGroupId());
+                            return storeRepository.save(store);
+                        })
+                        .map(StoreResponse::fromEntity));
+    }
 }

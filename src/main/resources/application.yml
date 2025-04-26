@@ -7,6 +7,9 @@ server:
     min-response-size: 2KB
     mime-types: text/html,text/xml,text/plain,text/css,application/javascript,application/json
 spring:
+  messages:
+    basename: messages
+    encoding: UTF-8
   servlet:
     multipart:
       max-file-size: 10MB
