@@ -1,12 +1,13 @@
 package com.keakimleang.digital_menu.features.stores.entities;
 
-import com.keakimleang.digital_menu.commons.entities.BaseEntityAudit;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
-import org.springframework.data.relational.core.mapping.Table;
-
-import java.io.Serial;
+import com.keakimleang.digital_menu.commons.entities.*;
+import com.keakimleang.digital_menu.features.users.entities.*;
+import java.io.*;
+import java.time.*;
+import java.util.*;
+import lombok.*;
+import org.springframework.data.annotation.*;
+import org.springframework.data.relational.core.mapping.*;
 
 @Getter
 @Setter
@@ -37,4 +38,17 @@ public class Store extends BaseEntityAudit {
     private Boolean showGoogleMap = true;
 
     private Long groupId;
+
+    private LocalDateTime expiredAt;
+    private String extendReason;
+
+    @Transient
+    private Group group;
+
+    @Transient
+    private List<OperatingHour> operatingHours;
+    @Transient
+    private List<OrderingOption> orderingOptions;
+    @Transient
+    private List<PaymentMethod> paymentMethods;
 }

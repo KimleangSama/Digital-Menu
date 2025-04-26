@@ -1,19 +1,17 @@
 package com.keakimleang.digital_menu.features.users.controllers;
 
-import com.keakimleang.digital_menu.annotations.CurrentUser;
-import com.keakimleang.digital_menu.commons.payloads.BaseResponse;
-import com.keakimleang.digital_menu.constants.APIURLs;
+import com.keakimleang.digital_menu.annotations.*;
+import com.keakimleang.digital_menu.commons.payloads.*;
+import com.keakimleang.digital_menu.constants.*;
 import com.keakimleang.digital_menu.features.users.payloads.*;
-import com.keakimleang.digital_menu.features.users.payloads.mappers.UserMapper;
-import com.keakimleang.digital_menu.features.users.services.AuthService;
-import com.keakimleang.digital_menu.features.users.services.UserRoleService;
-import com.keakimleang.digital_menu.features.users.services.UserService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.security.access.prepost.PreAuthorize;
+import com.keakimleang.digital_menu.features.users.payloads.mappers.*;
+import com.keakimleang.digital_menu.features.users.services.*;
+import lombok.*;
+import lombok.extern.slf4j.*;
+import org.springframework.dao.*;
+import org.springframework.security.access.prepost.*;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Mono;
+import reactor.core.publisher.*;
 
 @Slf4j
 @RestController
@@ -44,7 +42,7 @@ public class AuthController {
         return authService.loginUser(request)
                 .map(authResponse -> BaseResponse.<AuthResponse>ok().setPayload(authResponse))
                 .switchIfEmpty(Mono.just(
-                        BaseResponse.<AuthResponse>badRequest()
+                        BaseResponse.<AuthResponse>wrongCredentials()
                                 .setError("Invalid credentials")))
                 .onErrorResume(ex -> Mono.just(
                         BaseResponse.<AuthResponse>wrongCredentials()
@@ -55,19 +53,22 @@ public class AuthController {
     @GetMapping("/me")
     @PreAuthorize("isAuthenticated()")
     public Mono<BaseResponse<UserResponse>> findCurrentUser(@CurrentUser CustomUserDetails user) {
-        return Mono
-                .fromCallable(() -> userRoleService.findRolesByUserId(user.getUser().getId()))
-                .flatMap(rolesFlux -> rolesFlux.collectList()
-                        .map(roles -> {
-                            UserResponse userResponse = userMapper.toUserResponse(user.getUser());
-                            userResponse.setRoles(roles);
-                            return BaseResponse.<UserResponse>ok().setPayload(userResponse);
-                        })
-                )
+        if (user == null || user.getUser() == null) {
+            return Mono.just(BaseResponse.<UserResponse>badRequest()
+                    .setError("User is not authenticated or user details are missing."));
+        }
+        return userRoleService.findRolesByUserId(user.getUser().getId())
+                .collectList()
+                .map(roles -> {
+                    UserResponse userResponse = userMapper.toUserResponse(user.getUser());
+                    userResponse.setRoles(roles);
+                    return BaseResponse.<UserResponse>ok().setPayload(userResponse);
+                })
                 .onErrorResume(ex -> {
-                    log.error("Error fetching current user: {}", ex.getMessage());
+                    log.error("Error fetching current user", ex);
                     return Mono.just(BaseResponse.<UserResponse>exception()
                             .setError("Failed to fetch current user: " + ex.getMessage()));
                 });
     }
+
 }

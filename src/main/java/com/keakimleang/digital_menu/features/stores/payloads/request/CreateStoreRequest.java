@@ -33,7 +33,7 @@ public class CreateStoreRequest {
     private Boolean showGoogleMap = true;
 
     private List<CreateOperatingHourRequest> operatingHours;
-    private List<CreateOrderingOptionRequest> orderOptions;
+    private List<CreateOrderingOptionRequest> orderingOptions;
     private List<CreatePaymentMethodRequest> paymentMethods;
 
     public static Store fromRequest(CreateStoreRequest request) {

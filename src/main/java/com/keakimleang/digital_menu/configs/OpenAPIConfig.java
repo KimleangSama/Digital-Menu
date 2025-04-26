@@ -13,15 +13,15 @@ public class OpenAPIConfig {
     String scheme = "bearer";
 
     @Bean
-    public OpenAPI orderServiceAPI() {
+    public OpenAPI digitalMenuAPI() {
         return new OpenAPI()
-                .info(new Info().title("Hang Service API")
-                        .description("This is a Hang Service API")
+                .info(new Info().title("Digital Menu API")
+                        .description("This is a Digital Menu API")
                         .version("v0.1")
                         .license(new License().name("Apache 2.0")))
                 .externalDocs(new ExternalDocumentation()
-                        .description("You can refer to the Auth Service wiki documentation")
-                        .url("https://www.kkimleang.com"))
+                        .description("You can refer to the Digital Menu API wiki documentation")
+                        .url("https://www.keakimleang.com"))
                 .addSecurityItem(new SecurityRequirement().addList(schemeName))
                 .components(new Components()
                         .addSecuritySchemes(schemeName, new SecurityScheme()

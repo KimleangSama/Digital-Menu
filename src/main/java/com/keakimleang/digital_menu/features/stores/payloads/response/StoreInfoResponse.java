@@ -17,9 +17,9 @@ public class StoreInfoResponse {
 
     public static StoreInfoResponse fromEntity(Store store) {
         StoreInfoResponse response = new StoreInfoResponse();
-//        response.setOperatingHours(OperatingHourResponse.fromEntities(store.getOperatingHours()));
-//        response.setOrderOptions(OrderingOptionResponse.fromEntities(store.getOrderingOptions()));
-//        response.setPaymentMethods(PaymentMethodResponse.fromEntities(store.getPaymentMethods()));
+        response.setOperatingHours(OperatingHourResponse.fromEntities(store.getOperatingHours()));
+        response.setOrderOptions(OrderingOptionResponse.fromEntities(store.getOrderingOptions()));
+        response.setPaymentMethods(PaymentMethodResponse.fromEntities(store.getPaymentMethods()));
         return response;
     }
 }

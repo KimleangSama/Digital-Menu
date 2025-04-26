@@ -25,6 +25,8 @@ CREATE TABLE stores
     lng              DOUBLE PRECISION,
     show_google_map  BOOLEAN,
     group_id         int4,
+    extend_reason VARCHAR(255),
+    expired_at    TIMESTAMP WITHOUT TIME ZONE,
     CONSTRAINT pk_stores PRIMARY KEY (id)
 );
 
@@ -92,7 +94,7 @@ ALTER TABLE feedbacks
     ADD CONSTRAINT FK_FEEDBACKS_ON_STORE FOREIGN KEY (store_id) REFERENCES stores (id);
 
 ALTER TABLE fee_ranges
-    ADD CONSTRAINT FK_FEE_RANGES_ON_ORDERING_OPTION FOREIGN KEY (ordering_option_id) REFERENCES ordering_options (id);
+    ADD CONSTRAINT FK_FEE_RANGES_ON_ORDERING_OPTION FOREIGN KEY (ordering_option_id) REFERENCES ordering_options (id) ON DELETE CASCADE;
 
 ALTER TABLE languages
     ADD CONSTRAINT FK_LANGUAGES_ON_STORE FOREIGN KEY (store_id) REFERENCES stores (id);

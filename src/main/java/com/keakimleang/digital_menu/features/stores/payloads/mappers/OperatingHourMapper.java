@@ -2,6 +2,7 @@ package com.keakimleang.digital_menu.features.stores.payloads.mappers;
 
 import com.keakimleang.digital_menu.features.stores.entities.OperatingHour;
 import com.keakimleang.digital_menu.features.stores.payloads.request.CreateOperatingHourRequest;
+import com.keakimleang.digital_menu.features.stores.payloads.request.updates.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
@@ -10,5 +11,6 @@ public interface OperatingHourMapper {
     OperatingHourMapper INSTANCE = Mappers.getMapper(OperatingHourMapper.class);
 
     OperatingHour toOperatingHour(CreateOperatingHourRequest request);
+    OperatingHour toOperatingHour(UpdateOperatingHourRequest request);
 }
 

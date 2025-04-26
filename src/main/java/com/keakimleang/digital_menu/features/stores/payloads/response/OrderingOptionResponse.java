@@ -23,7 +23,7 @@ public class OrderingOptionResponse {
         response.setId(orderingOption.getId());
         response.setName(orderingOption.getName());
         response.setDescription(orderingOption.getDescription());
-//        response.setFeeRanges(FeeRangeResponse.fromEntities(orderingOption.getFeeRanges()));
+        response.setFeeRanges(FeeRangeResponse.fromEntities(orderingOption.getFeeRanges()));
         return response;
     }
 

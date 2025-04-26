@@ -19,7 +19,7 @@ public class RoleServiceImpl {
     private final RoleRepository roleRepository;
 
     @Transactional(readOnly = true)
-    @Cacheable(value = CacheValue.ROLE, key = "#name")
+    @Cacheable(value = CacheValue.ROLES, key = "#name")
     public Mono<Role> findByName(String name) {
         return roleRepository.findByName(name);
     }

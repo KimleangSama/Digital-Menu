@@ -4,6 +4,7 @@ import com.keakimleang.digital_menu.features.stores.entities.OrderingOption;
 import com.keakimleang.digital_menu.features.stores.entities.PaymentMethod;
 import com.keakimleang.digital_menu.features.stores.payloads.request.CreateOrderingOptionRequest;
 import com.keakimleang.digital_menu.features.stores.payloads.request.CreatePaymentMethodRequest;
+import com.keakimleang.digital_menu.features.stores.payloads.request.updates.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
@@ -12,5 +13,6 @@ public interface OrderingOptionMapper {
     OrderingOptionMapper INSTANCE = Mappers.getMapper(OrderingOptionMapper.class);
 
     OrderingOption toOrderingOption(CreateOrderingOptionRequest request);
+    OrderingOption toOrderingOption(UpdateOrderingOptionRequest request);
 }
 

@@ -1,20 +1,17 @@
 package com.keakimleang.digital_menu.features.users.services;
 
-import com.keakimleang.digital_menu.constants.CacheValue;
-import com.keakimleang.digital_menu.features.users.entities.User;
-import com.keakimleang.digital_menu.features.users.entities.UserRole;
-import com.keakimleang.digital_menu.features.users.payloads.UserRequest;
-import com.keakimleang.digital_menu.features.users.payloads.UserResponse;
-import com.keakimleang.digital_menu.features.users.payloads.mappers.UserMapper;
-import com.keakimleang.digital_menu.features.users.repos.UserRepository;
-import com.keakimleang.digital_menu.features.users.repos.UserRoleRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
+import com.keakimleang.digital_menu.constants.*;
+import com.keakimleang.digital_menu.features.users.entities.*;
+import com.keakimleang.digital_menu.features.users.payloads.*;
+import com.keakimleang.digital_menu.features.users.payloads.mappers.*;
+import com.keakimleang.digital_menu.features.users.repos.*;
+import java.time.*;
+import lombok.*;
+import lombok.extern.slf4j.*;
+import org.springframework.cache.annotation.*;
+import org.springframework.stereotype.*;
+import org.springframework.transaction.annotation.*;
+import reactor.core.publisher.*;
 
 @Slf4j
 @Service
@@ -75,5 +72,13 @@ public class UserService {
     @Cacheable(value = CacheValue.USER_ENTITY, key = "#username")
     public Mono<User> findByUsername(String username) {
         return userRepository.findByUsername(username);
+    }
+
+    @Transactional
+    public Mono<Void> updateLastLoginAt(Long id) {
+        return userRepository.findById(id).flatMap(user -> {
+            user.setLastLoginAt(LocalDateTime.now());
+            return userRepository.save(user).then();
+        });
     }
 }

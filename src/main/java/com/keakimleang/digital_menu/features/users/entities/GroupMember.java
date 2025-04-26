@@ -3,6 +3,7 @@ package com.keakimleang.digital_menu.features.users.entities;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.springframework.data.annotation.*;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.io.Serial;
@@ -18,4 +19,7 @@ public class GroupMember implements Serializable {
 
     private Long groupId;
     private Long userId;
+
+    @Transient
+    private User user;
 }

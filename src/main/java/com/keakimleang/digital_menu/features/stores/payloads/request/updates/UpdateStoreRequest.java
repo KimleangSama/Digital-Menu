@@ -31,6 +31,6 @@ public class UpdateStoreRequest {
     private Boolean showGoogleMap;
 
     private List<UpdateOperatingHourRequest> operatingHours;
-    private List<UpdateOrderingOptionRequest> orderOptions;
+    private List<UpdateOrderingOptionRequest> orderingOptions;
     private List<UpdatePaymentMethodRequest> paymentMethods;
 }

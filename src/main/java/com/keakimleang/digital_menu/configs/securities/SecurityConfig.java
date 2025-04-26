@@ -16,7 +16,7 @@ import org.springframework.security.web.server.context.*;
 @Slf4j
 @Configuration
 @EnableWebFluxSecurity
-@EnableMethodSecurity(jsr250Enabled = true)
+@EnableMethodSecurity(securedEnabled = true, jsr250Enabled = true)
 @EnableReactiveMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
@@ -26,6 +26,7 @@ public class SecurityConfig {
     public SecurityWebFilterChain securityWebFilterChain(final ServerHttpSecurity http,
                                                          final WebTokenFilter filter) {
         return http
+                .cors(ServerHttpSecurity.CorsSpec::disable)
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)

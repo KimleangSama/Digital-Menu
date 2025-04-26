@@ -26,15 +26,19 @@ public class AuthService {
                         )
                         .flatMap(auth -> {
                             if (auth.isAuthenticated()) {
-                                CustomUserDetails ud = (CustomUserDetails) auth.getPrincipal();
-                                String accessToken = tokenProvider.generateAccessToken(ud);
-                                String refreshToken = tokenProvider.generateRefreshToken(ud);
-                                return Mono.just(new AuthResponse(
-                                        accessToken,
-                                        refreshToken,
-                                        user.getUsername(),
-                                        tokenProvider.getExpirationDateFromToken(accessToken)
-                                ));
+                                return userService.updateLastLoginAt(user.getId())
+                                        .doOnSuccess(v -> log.info("User {} logged in", user.getUsername()))
+                                        .thenReturn((CustomUserDetails) auth.getPrincipal())
+                                        .map(ud -> {
+                                            String accessToken = tokenProvider.generateAccessToken(ud);
+                                            String refreshToken = tokenProvider.generateRefreshToken(ud);
+                                            return new AuthResponse(
+                                                    accessToken,
+                                                    refreshToken,
+                                                    user.getUsername(),
+                                                    tokenProvider.getExpirationDateFromToken(accessToken)
+                                            );
+                                        });
                             } else {
                                 return Mono.error(new BadCredentialsException("Invalid credentials"));
                             }

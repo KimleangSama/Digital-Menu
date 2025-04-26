@@ -1,9 +1,10 @@
 package com.keakimleang.digital_menu.features.stores.entities;
 
+import java.util.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.*;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.io.Serial;
@@ -24,4 +25,7 @@ public class OrderingOption implements Serializable {
     private String description;
 
     private Long storeId;
+
+    @Transient
+    private List<FeeRange> feeRanges;
 }

@@ -1,9 +1,11 @@
 package com.keakimleang.digital_menu.features.users.entities;
 
 import com.keakimleang.digital_menu.commons.entities.BaseEntityAudit;
+import java.util.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.springframework.data.annotation.*;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.io.Serial;
@@ -18,4 +20,7 @@ public class Group extends BaseEntityAudit {
 
     private String name;
     private String description;
+
+    @Transient
+    private List<GroupMember> members;
 }
