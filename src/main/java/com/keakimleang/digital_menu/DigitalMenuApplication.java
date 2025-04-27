@@ -2,6 +2,7 @@ package com.keakimleang.digital_menu;
 
 import org.springframework.boot.*;
 import org.springframework.boot.autoconfigure.*;
+import org.springframework.cache.annotation.*;
 import org.springframework.data.r2dbc.repository.config.*;
 
 @SpringBootApplication

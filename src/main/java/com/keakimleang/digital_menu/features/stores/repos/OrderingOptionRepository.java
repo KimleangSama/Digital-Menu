@@ -12,4 +12,6 @@ public interface OrderingOptionRepository extends ReactiveCrudRepository<Orderin
     @Modifying
     @Query("DELETE FROM ordering_options WHERE store_id = :storeId")
     Mono<Void> deleteByStoreId(@Param("storeId") Long storeId);
+
+    Flux<OrderingOption> findByStoreId(Long id);
 }

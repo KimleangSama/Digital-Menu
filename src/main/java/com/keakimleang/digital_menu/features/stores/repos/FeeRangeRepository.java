@@ -11,4 +11,6 @@ public interface FeeRangeRepository extends ReactiveCrudRepository<FeeRange, Lon
     @Modifying
     @Query("DELETE FROM fee_ranges WHERE ordering_option_id = :id")
     Mono<Void> deleteByOrderingOptionId(Long id);
+
+    Flux<FeeRange> findByOrderingOptionId(Long id);
 }

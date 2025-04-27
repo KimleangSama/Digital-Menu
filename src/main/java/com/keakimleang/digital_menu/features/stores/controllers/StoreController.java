@@ -60,4 +60,14 @@ public class StoreController {
                 .collectList()
                 .map(res -> BaseResponse.<List<StoreResponse>>ok().setPayload(res));
     }
+
+    @GetMapping("/mine")
+    @PreAuthorize("isAuthenticated()")
+    public Mono<BaseResponse<List<StoreResponse>>> findMyStore(
+            @CurrentUser CustomUserDetails user
+    ) {
+        return storeService.findMyStore(user.getUser())
+                .collectList()
+                .map(res -> BaseResponse.<List<StoreResponse>>ok().setPayload(res));
+    }
 }

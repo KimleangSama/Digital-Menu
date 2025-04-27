@@ -1,13 +1,13 @@
 package com.keakimleang.digital_menu.features.stores.payloads.response;
 
-import com.keakimleang.digital_menu.features.stores.entities.Store;
+import com.keakimleang.digital_menu.features.stores.entities.*;
 import com.keakimleang.digital_menu.features.stores.payloads.mappers.StoreMapper;
+import java.util.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
 import java.io.Serializable;
-import java.util.UUID;
 
 @Getter
 @Setter

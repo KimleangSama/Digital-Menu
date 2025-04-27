@@ -9,4 +9,6 @@ import reactor.core.publisher.*;
 public interface GroupMemberRepository extends ReactiveCrudRepository<GroupMember, Long> {
 
     Mono<Boolean> existsByUserIdAndGroupId(Long id, Long groupId);
+
+    Flux<GroupMember> findByUserId(Long id);
 }

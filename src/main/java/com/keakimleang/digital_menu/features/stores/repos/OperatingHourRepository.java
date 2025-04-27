@@ -12,4 +12,6 @@ public interface OperatingHourRepository extends ReactiveCrudRepository<Operatin
     @Modifying
     @Query("DELETE FROM operating_hours WHERE store_id = :storeId")
     Mono<Void> deleteByStoreId(@Param("storeId") Long storeId);
+
+    Flux<OperatingHour> findByStoreId(Long id);
 }

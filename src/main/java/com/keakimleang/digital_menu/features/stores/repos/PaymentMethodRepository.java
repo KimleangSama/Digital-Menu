@@ -12,4 +12,6 @@ public interface PaymentMethodRepository extends ReactiveCrudRepository<PaymentM
     @Modifying
     @Query("DELETE FROM payment_methods WHERE store_id = :storeId")
     Mono<Void> deleteByStoreId(@Param("storeId") Long storeId);
+
+    Flux<PaymentMethod> findByStoreId(Long id);
 }

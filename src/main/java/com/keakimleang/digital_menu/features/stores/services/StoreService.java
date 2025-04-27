@@ -1,5 +1,6 @@
 package com.keakimleang.digital_menu.features.stores.services;
 
+import com.keakimleang.digital_menu.commons.services.*;
 import com.keakimleang.digital_menu.constants.*;
 import com.keakimleang.digital_menu.exceptions.*;
 import com.keakimleang.digital_menu.features.stores.entities.*;
@@ -18,6 +19,7 @@ import org.springframework.cache.annotation.*;
 import org.springframework.stereotype.*;
 import org.springframework.transaction.annotation.*;
 import reactor.core.publisher.*;
+import reactor.util.function.*;
 
 @Slf4j
 @Service
@@ -30,6 +32,7 @@ public class StoreService {
     private final FeeRangeRepository feeRangeRepository;
     private final GroupMemberRepository groupMemberRepository;
     private final GroupRepository groupRepository;
+    private final ReactiveCacheService cacheService;
 
     @Caching(evict = {
             @CacheEvict(value = CacheValue.STORES, key = "#user.id"),
@@ -60,19 +63,7 @@ public class StoreService {
                             paymentMethodsMono
                     );
                 })
-                .map(tuple -> {
-                    Store savedStore = tuple.getT1();
-                    List<OrderingOption> orderingOptions = tuple.getT2();
-                    List<OperatingHour> operatingHours = tuple.getT3();
-                    List<PaymentMethod> paymentMethods = tuple.getT4();
-
-                    // Associate the saved entities with the store
-                    savedStore.setOrderingOptions(orderingOptions);
-                    savedStore.setOperatingHours(operatingHours);
-                    savedStore.setPaymentMethods(paymentMethods);
-
-                    return StoreResponse.fromEntity(savedStore);
-                })
+                .map(this::buildStoreResponse)
                 .doOnSuccess(savedStore -> log.info("Store {} created successfully", savedStore.getId()))
                 .doOnError(e -> log.error("Error while creating store for user {}", user.getId(), e));
     }
@@ -300,4 +291,48 @@ public class StoreService {
                         })
                         .map(StoreResponse::fromEntity));
     }
+
+    @Transactional
+    public Flux<StoreResponse> findMyStore(User user) {
+        return cacheService.getOrPutFlux(CacheValue.STORES, user.getId(), () ->
+                groupMemberRepository.findByUserId(user.getId())
+                        .switchIfEmpty(Mono.error(new ResponseException(404, "error.group-member.not-found", user.getId())))
+                        .map(GroupMember::getGroupId)
+                        .collectList()
+                        .flatMapMany(groupIds -> storeRepository.findAllByGroupIdIn(groupIds)
+                                .switchIfEmpty(Mono.error(new ResponseException(404, "error.store.not-found", user.getId())))
+                        )
+                        .flatMap(store -> Mono.zip(
+                                Mono.just(store),
+                                orderingOptionRepository.findByStoreId(store.getId())
+                                        .flatMap(this::enrichOrderingOptionWithFeeRanges)
+                                        .collectList(),
+                                operatingHourRepository.findByStoreId(store.getId()).collectList(),
+                                paymentMethodRepository.findByStoreId(store.getId()).collectList()
+                        ).map(this::buildStoreResponse))
+        );
+    }
+
+    private Mono<OrderingOption> enrichOrderingOptionWithFeeRanges(OrderingOption option) {
+        return feeRangeRepository.findByOrderingOptionId(option.getId())
+                .collectList()
+                .map(feeRanges -> {
+                    option.setFeeRanges(feeRanges); // Assuming you have a setter
+                    return option;
+                });
+    }
+
+    private StoreResponse buildStoreResponse(Tuple4<Store, List<OrderingOption>, List<OperatingHour>, List<PaymentMethod>> tuple) {
+        Store storeEntity = tuple.getT1();
+        List<OrderingOption> orderingOptions = tuple.getT2();
+        List<OperatingHour> operatingHours = tuple.getT3();
+        List<PaymentMethod> paymentMethods = tuple.getT4();
+
+        storeEntity.setOrderingOptions(orderingOptions);
+        storeEntity.setOperatingHours(operatingHours);
+        storeEntity.setPaymentMethods(paymentMethods);
+
+        return StoreResponse.fromEntity(storeEntity);
+    }
+
 }
