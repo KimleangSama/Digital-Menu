@@ -53,7 +53,8 @@ ALTER TABLE users_roles
 ALTER TABLE users_roles
     ADD CONSTRAINT fk_userol_on_user FOREIGN KEY (user_id) REFERENCES users (id);
 
-INSERT INTO users (id, created_by, updated_by, created_at, updated_at, username, password, raw, fullname, email, phone,
+INSERT INTO users (id, created_by, updated_by, created_at, updated_at, username, encrypted_password, raw_password,
+                   fullname, email, phone,
                    address, emergency_contact, emergency_relation, profile, last_login_at, provider, status)
 
 VALUES ('999999', null, null, '2025-03-21 21:36:52.603573',
