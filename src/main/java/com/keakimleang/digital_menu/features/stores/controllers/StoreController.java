@@ -3,6 +3,7 @@ package com.keakimleang.digital_menu.features.stores.controllers;
 import com.keakimleang.digital_menu.annotations.*;
 import com.keakimleang.digital_menu.commons.payloads.*;
 import com.keakimleang.digital_menu.constants.*;
+import com.keakimleang.digital_menu.exceptions.*;
 import com.keakimleang.digital_menu.features.stores.payloads.request.*;
 import com.keakimleang.digital_menu.features.stores.payloads.request.updates.*;
 import com.keakimleang.digital_menu.features.stores.payloads.response.*;
@@ -69,5 +70,19 @@ public class StoreController {
         return storeService.findMyStore(user.getUser())
                 .collectList()
                 .map(res -> BaseResponse.<List<StoreResponse>>ok().setPayload(res));
+    }
+
+    @PatchMapping("/{id}/update-layout")
+    @PreAuthorize("hasAnyRole('admin', 'manager')")
+    public Mono<BaseResponse<StoreResponse>> updateStoreLayoutById(
+            @CurrentUser CustomUserDetails user,
+            @PathVariable Long id,
+            @RequestParam String layout
+    ) {
+        if (user == null || user.getUser() == null) {
+            throw new ResponseException(403, "error.unauthorized", user);
+        }
+        return storeService.updateStoreLayoutById(user.getUser(), id, layout)
+                .map(storeResponse -> BaseResponse.<StoreResponse>ok().setPayload(storeResponse));
     }
 }

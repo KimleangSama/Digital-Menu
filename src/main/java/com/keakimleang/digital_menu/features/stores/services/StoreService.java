@@ -32,6 +32,7 @@ public class StoreService {
     private final FeeRangeRepository feeRangeRepository;
     private final GroupMemberRepository groupMemberRepository;
     private final GroupRepository groupRepository;
+
     private final ReactiveCacheService cacheService;
 
     @Caching(evict = {
@@ -335,4 +336,18 @@ public class StoreService {
         return StoreResponse.fromEntity(storeEntity);
     }
 
+    @Transactional
+    public Mono<StoreResponse> updateStoreLayoutById(User user, Long id, String layout) {
+        return cacheService.getOrPutMono(CacheValue.STORES, id, () -> storeRepository.findById(id)
+                .switchIfEmpty(Mono.error(new ResponseException(404, "error.store.not-found", id)))
+                .flatMap(store -> {
+                    if (!store.getCreatedBy().equals(user.getId())) {
+                        return Mono.error(new ResponseException(403, "error.store.forbidden", user.getUsername(), id));
+                    }
+                    store.setLayout(layout);
+                    return storeRepository.save(store);
+                })
+                .map(StoreResponse::fromEntity)
+                .doOnError(e -> log.error("Error while updating store layout for user {}", user.getId(), e)));
+    }
 }
